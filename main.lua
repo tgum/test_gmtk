@@ -24,12 +24,14 @@ function collides_with_world(x, y, w, h)
 			local world_y = math.floor((i-1) / level.height) * level.tile_size
 			local collision_result = rect_rect_collision(x, y, w, h, world_x, world_y, level.tile_size, level.tile_size)
 			if collision_result then
+				love.graphics.rectangle("line", world_x, world_y, 16, 16)
 				collided = true
 			end
 		end
 	end
 	return collided
 end
+
 
 function love.load()
 	-- pixel art
