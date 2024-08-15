@@ -6,4 +6,6 @@ function love.conf(t)
 	t.window.height = 240 * pixel_scale
 	t.window.title = "Refreshing my brain for love2d"
 	t.modules.joystick = false
+	t.window.title = "Bonjure"
 end
+
