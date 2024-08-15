@@ -32,6 +32,7 @@ function collides_with_world(x, y, w, h)
 	return collided
 end
 
+-- zoink the test
 
 function love.load()
 	-- pixel art
