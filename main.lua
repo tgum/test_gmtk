@@ -82,31 +82,27 @@ GRAVITY = 3
 current_level = 0
 
 function love.update(dt)
-	
-end
-
-function love.draw()
-	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
-
 	player.yvel = player.yvel + GRAVITY
 
 	old_player_x = player.x
 	old_player_y = player.y
 	
-	player.x = player.x + player.xvel
+	player.x = player.x + player.xvel * dt
 	if collides_with_world(player.x, player.y, tile_size, tile_size) then
 		player.x = old_player_x
 		player.xvel = 0
 	end
 	
-	player.y = player.y + player.yvel
+	player.y = player.y + player.yvel * dt
 	if collides_with_world(player.x, player.y, tile_size, tile_size) then
 		print("collide")
 		player.y = old_player_y
 		player.yvel = 0
 	end
+end
 
-
+function love.draw()
+	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
 	
 	for i, layer in pairs(level.layers) do
 		--layer:draw()
