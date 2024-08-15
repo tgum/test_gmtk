@@ -1,0 +1,16 @@
+{
+	"identifier": "Level_0",
+	"uniqueIdentifer": "ab27fa80-4ce0-11ef-824d-d965dfd5b3ce",
+	"x": 0,
+	"y": 0,
+	"width": 400,
+	"height": 256,
+	"bgColor": "#0099DB",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Collisions.png",
+		"AutoLayer.png"
+	],
+	"entities" : {}
+}
