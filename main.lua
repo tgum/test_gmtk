@@ -1,6 +1,7 @@
 io.stdout:setvbuf("no")
 
 -- yoinked from a while ago
+-- now i have doubts it works :(
 -- Rectangle rectangle collision
 function rect_rect_collision(r1x, r1y, r1w, r1h, r2x, r2y, r2w, r2h)
 	-- are the sides of one rectangle touching the other?
@@ -19,20 +20,21 @@ function collides_with_world(x, y, w, h)
 	-- multiple times per frame
 	local collided = false
 	for i, value in ipairs(level.collision_layer) do
+		local world_x = ((i-1) % level.height) * level.tile_size
+		local world_y = math.floor((i-1) / level.height) * level.tile_size
+		love.graphics.setBackgroundColor(0, 1, 0, 1)
 		if value == 1 then
-			local world_x = ((i-1) % level.height) * level.tile_size
-			local world_y = math.floor((i-1) / level.height) * level.tile_size
 			local collision_result = rect_rect_collision(x, y, w, h, world_x, world_y, level.tile_size, level.tile_size)
+			love.graphics.setBackgroundColor(1, 0, 0, 1)
 			if collision_result then
-				love.graphics.rectangle("line", world_x, world_y, 16, 16)
+				love.graphics.setBackgroundColor(1, 0, 1, 1)
 				collided = true
 			end
 		end
+		love.graphics.rectangle("fill", world_x, world_y, level.tile_size, level.tile_size)
 	end
 	return collided
 end
-
--- zoink the test
 
 function love.load()
 	-- pixel art
@@ -64,14 +66,9 @@ function love.load()
 		if layer.intGrid ~= nil then
 			level.collision_layer = layer.intGrid
 		end
-		
-		--print(dump(layer))
-		print("--------------------------------------------------")
 	end
 
 	ldtk:goTo(1)
-
-	print(collides_with_world(0, 0, 16, 16))
 end
 
 player = {
@@ -99,6 +96,7 @@ function love.update(dt)
 	
 	player.y = player.y + player.yvel * dt
 	if collides_with_world(player.x, player.y, tile_size, tile_size) then
+		print("collide")
 		player.y = old_player_y
 		player.yvel = 0
 	end
@@ -108,7 +106,7 @@ function love.draw()
 	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
 	
 	for i, layer in pairs(level.layers) do
-		layer:draw()
+		--layer:draw()
 	end
 	
 	love.graphics.draw(player.image, player.x, player.y)
