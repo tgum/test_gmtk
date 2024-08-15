@@ -84,7 +84,7 @@
 							"size": 3,
 							"tileRectsIds": [[8]],
 							"alpha": 1,
-							"chance": 0.29,
+							"chance": 0.17,
 							"breakOnMatch": true,
 							"pattern": [0,0,0,0,-1,0,0,1,0],
 							"flipX": false,
