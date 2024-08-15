@@ -18,22 +18,21 @@ function collides_with_world(x, y, w, h)
 	-- currently loop over everything, probably not good for performance
 	-- on a level with 16*25 tiles = 400, and you might use this function
 	-- multiple times per frame
-	local collided = false
 	for i, value in ipairs(level.collision_layer) do
-		local world_x = ((i-1) % level.height) * level.tile_size
-		local world_y = math.floor((i-1) / level.height) * level.tile_size
-		love.graphics.setBackgroundColor(0, 1, 0, 1)
+		local world_x = ((i-1) % level.width) * level.tile_size
+		local world_y = math.floor((i-1) / level.width) * level.tile_size
+		love.graphics.setColor(0, 1, 0)
 		if value == 1 then
 			local collision_result = rect_rect_collision(x, y, w, h, world_x, world_y, level.tile_size, level.tile_size)
-			love.graphics.setBackgroundColor(1, 0, 0, 1)
+			love.graphics.setColor(1, 0, 0)
 			if collision_result then
-				love.graphics.setBackgroundColor(1, 0, 1, 1)
-				collided = true
+				love.graphics.setColor(1, 0, 1)
+				return true
 			end
 		end
-		love.graphics.rectangle("fill", world_x, world_y, level.tile_size, level.tile_size)
+		love.graphics.rectangle("fill", world_x, world_y, 16, 16)
 	end
-	return collided
+	return false
 end
 
 function love.load()
@@ -83,27 +82,31 @@ GRAVITY = 3
 current_level = 0
 
 function love.update(dt)
+	
+end
+
+function love.draw()
+	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
+
 	player.yvel = player.yvel + GRAVITY
 
 	old_player_x = player.x
 	old_player_y = player.y
 	
-	player.x = player.x + player.xvel * dt
+	player.x = player.x + player.xvel
 	if collides_with_world(player.x, player.y, tile_size, tile_size) then
 		player.x = old_player_x
 		player.xvel = 0
 	end
 	
-	player.y = player.y + player.yvel * dt
+	player.y = player.y + player.yvel
 	if collides_with_world(player.x, player.y, tile_size, tile_size) then
 		print("collide")
 		player.y = old_player_y
 		player.yvel = 0
 	end
-end
 
-function love.draw()
-	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
+
 	
 	for i, layer in pairs(level.layers) do
 		--layer:draw()
