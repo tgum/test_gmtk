@@ -35,12 +35,15 @@ function love.load()
 	-- pixel art
 	love.graphics.setDefaultFilter("nearest", "nearest", 1)
 
-	dump = require "libs/dump"
+	dump = require "libs.dump" -- like the most useful thing EVER
+	Camera = require "libs.camera"
+
 	player.image = love.graphics.newImage("assets/sprites/player.png")
+	
 	-- the ldtk library depends on json but cant import it? ig its kinda outdated or smth
-	json = require "libs/json"
+	json = require "libs.json"
 	-- an interface to load ldtk exports, hasnt been updated since 2021, but lets hope 4 the best :)
-	ldtk = require "libs/ldtk"
+	ldtk = require "libs.ldtk"
 	ldtk:load("assets/maps/levels.ldtk")
 
 	level = {
@@ -64,6 +67,8 @@ function love.load()
 	end
 
 	ldtk:goTo(1)
+
+	camera = Camera(player.x, player.y)
 end
 
 player = {
@@ -109,17 +114,21 @@ function love.update(dt)
 		player.y = old_player_y
 		player.yvel = 0
 	end
+
+	local dx,dy = player.x - camera.x, player.y - camera.y
+	camera:move(dx/2, dy/2)
 end
 
 function love.draw()
-	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
-	
+	camera:zoomTo(pixel_scale)
+	camera:attach()
+		
 	for i, layer in pairs(level.layers) do
 		layer:draw()
 	end
 	
 	love.graphics.draw(player.image, player.x, player.y)
 	
-	love.graphics.scale(1/pixel_scale, 1/pixel_scale) -- reset scale (in case ui or whatever)
+	camera:detach()
 end
 
