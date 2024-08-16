@@ -70,27 +70,42 @@ player = {
 	x = 0,
 	y = 0,
 	xvel = 0,
-	yvel = 0
+	yvel = 0,
+
+	speed = 13
 }
 
-GRAVITY = 3
+GRAVITY = 15
 
 current_level = 0
 
 function love.update(dt)
+	
+	if love.keyboard.isDown("left") then
+    player.xvel = player.xvel - player.speed
+  end
+	if love.keyboard.isDown("right") then
+    player.xvel = player.xvel + player.speed
+  end
+
 	player.yvel = player.yvel + GRAVITY
 
+	-- frikhson
+  player.xvel = player.xvel * 0.8
+  player.yvel = player.yvel * 0.8
+	
+	-- CHECK COLLISIONS
 	old_player_x = player.x
 	old_player_y = player.y
 	
 	player.x = player.x + player.xvel * dt
-	if collides_with_world(player.x, player.y, tile_size, tile_size) then
+	if collides_with_world(player.x, player.y, 12, 15) then
 		player.x = old_player_x
 		player.xvel = 0
 	end
 	
 	player.y = player.y + player.yvel * dt
-	if collides_with_world(player.x, player.y, tile_size, tile_size) then
+	if collides_with_world(player.x, player.y, 12, 15) then
 		player.y = old_player_y
 		player.yvel = 0
 	end
