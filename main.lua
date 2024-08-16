@@ -21,16 +21,12 @@ function collides_with_world(x, y, w, h)
 	for i, value in ipairs(level.collision_layer) do
 		local world_x = ((i-1) % level.width) * level.tile_size
 		local world_y = math.floor((i-1) / level.width) * level.tile_size
-		love.graphics.setColor(0, 1, 0)
 		if value == 1 then
 			local collision_result = rect_rect_collision(x, y, w, h, world_x, world_y, level.tile_size, level.tile_size)
-			love.graphics.setColor(1, 0, 0)
 			if collision_result then
-				love.graphics.setColor(1, 0, 1)
 				return true
 			end
 		end
-		love.graphics.rectangle("fill", world_x, world_y, 16, 16)
 	end
 	return false
 end
@@ -95,7 +91,6 @@ function love.update(dt)
 	
 	player.y = player.y + player.yvel * dt
 	if collides_with_world(player.x, player.y, tile_size, tile_size) then
-		print("collide")
 		player.y = old_player_y
 		player.yvel = 0
 	end
@@ -105,7 +100,7 @@ function love.draw()
 	love.graphics.scale(pixel_scale, pixel_scale) -- scale everything to a pixel art stuffs or smth
 	
 	for i, layer in pairs(level.layers) do
-		--layer:draw()
+		layer:draw()
 	end
 	
 	love.graphics.draw(player.image, player.x, player.y)
