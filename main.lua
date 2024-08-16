@@ -38,6 +38,9 @@ function love.load()
 	dump = require "libs.dump" -- like the most useful thing EVER
 	Camera = require "libs.camera"
 
+	Player = require "player"
+	player = Player(0, 0)
+	
 	player.image = love.graphics.newImage("assets/sprites/player.png")
 	
 	-- the ldtk library depends on json but cant import it? ig its kinda outdated or smth
@@ -45,22 +48,15 @@ function love.load()
 	-- an interface to load ldtk exports, hasnt been updated since 2021, but lets hope 4 the best :)
 	ldtk = require "libs.ldtk"
 	ldtk:load("assets/maps/levels.ldtk")
-
 	level = {
-		width = nil, -- you can have different layers with different sizes in one level but lets ignore that for a moment and eat some ice cream!!!
-		height = nil,
-		tile_size = nil,
 		layers = {},
-		collision_layer = {},
 	}
 
 	function ldtk.onLayer(layer)
 		level.width = layer.width
 		level.height = layer.height
 		level.tile_size = layer.gridSize
-		
 		table.insert(level.layers, layer)
-
 		if layer.intGrid ~= nil then
 			level.collision_layer = layer.intGrid
 		end
@@ -71,14 +67,7 @@ function love.load()
 	camera = Camera(player.x, player.y)
 end
 
-player = {
-	x = 0,
-	y = 0,
-	xvel = 0,
-	yvel = 0,
-
-	speed = 13
-}
+player = {}
 
 GRAVITY = 15
 
