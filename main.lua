@@ -24,10 +24,6 @@ function love.load()
 	camera = Camera(0, 0)
 end
 
-GRAVITY = 15
-
-current_level = 0
-
 function love.update(dt)
 	world:update(dt)
 
