@@ -10,6 +10,7 @@ function love.load()
 	wf = require "libraries/windfield"
 	world = wf.newWorld(0, 200)
 
+
 	Player = require "player"
 	player = Player(0, 0)
 	
