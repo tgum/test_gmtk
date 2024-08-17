@@ -10,8 +10,6 @@ function love.load()
 	Player = require "player"
 	player = Player(0, 0)
 	
-	--player.image = love.graphics.newImage("assets/sprites/player.png")
-	
 	-- the ldtk library depends on json but cant import it? ig its kinda outdated or smth
 	json = require "libs.json"
 	-- an interface to load ldtk exports, hasnt been updated since 2021, but lets hope 4 the best :)
