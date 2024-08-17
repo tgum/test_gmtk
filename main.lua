@@ -7,32 +7,11 @@ function love.load()
 	dump = require "libs.dump" -- like the most useful thing EVER
 	Camera = require "libs.camera"
 
-	wf = require "libraries/windfield"
+	wf = require "libs.windfield"
 	world = wf.newWorld(0, 200)
 
 	Player = require "player"
 	player = Player(0, 0)
-	
-	-- the ldtk library depends on json but cant import it? ig its kinda outdated or smth
-	json = require "libs.json"
-	-- an interface to load ldtk exports, hasnt been updated since 2021, but lets hope 4 the best :)
-	ldtk = require "libs.ldtk"
-	ldtk:load("assets/maps/levels.ldtk")
-	level = {
-		layers = {}
-	}
-
-	function ldtk.onLayer(layer)
-		level.width = layer.width
-		level.height = layer.height
-		level.tile_size = layer.gridSize
-		table.insert(level.layers, layer)
-		if layer.intGrid ~= nil then
-			level.collision_layer = layer.intGrid
-		end
-	end
-
-	ldtk:goTo(1)
 
 	camera = Camera(player.x, player.y)
 end
@@ -51,10 +30,6 @@ end
 function love.draw()
 	camera:zoomTo(pixel_scale)
 	camera:attach()
-		
-	for i, layer in pairs(level.layers) do
-		layer:draw()
-	end
 
 	player:draw()
 	
