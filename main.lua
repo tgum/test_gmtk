@@ -1,5 +1,13 @@
 io.stdout:setvbuf("no")
 
+UP = 1
+DOWN = 2
+LEFT = 3
+RIGHT = 4
+START = 5
+
+z_block = {START, RIGHT, DOWN, RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, LEFT}
+
 function love.load()
 	-- pixel art
 	love.graphics.setDefaultFilter("nearest", "nearest", 1)
@@ -7,12 +15,10 @@ function love.load()
 	dump = require "libs.dump" -- like the most useful thing EVER
 	Camera = require "libs.camera"
 
+	Houselet = require "houselet"
+
 	wf = require "libs.windfield"
 	world = wf.newWorld(0, 512)
-
-	box = world:newRectangleCollider(400 - 50/2, 0, 50, 50)
-	box:setRestitution(0.8)
-	box:applyAngularImpulse(5000)
 
 	ground = world:newRectangleCollider(0, 550, 800, 50)
 	wall_left = world:newRectangleCollider(0, 0, 50, 600)
@@ -21,19 +27,23 @@ function love.load()
 	wall_left:setType('static')
 	wall_right:setType('static')
 
-	camera = Camera(0, 0)
+	camera = Camera(width/2, height/2)
+
+	hl = Houselet(100, 0, z_block)
 end
 
 function love.update(dt)
 	world:update(dt)
 
-	camera:move(1, 3)
+	--camera:move(0.1, 0)
 end
 
 function love.draw()
 	camera:attach()
 	
 	world:draw()
+
+	hl:draw()
 	
 	camera:detach()
 end
