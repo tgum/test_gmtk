@@ -8,12 +8,20 @@ function love.load()
 	Camera = require "libs.camera"
 
 	wf = require "libs.windfield"
-	world = wf.newWorld(0, 200)
+	world = wf.newWorld(0, 512)
 
-	Player = require "player"
-	player = Player(0, 0)
+	box = world:newRectangleCollider(400 - 50/2, 0, 50, 50)
+	box:setRestitution(0.8)
+	box:applyAngularImpulse(5000)
 
-	camera = Camera(player.x, player.y)
+	ground = world:newRectangleCollider(0, 550, 800, 50)
+	wall_left = world:newRectangleCollider(0, 0, 50, 600)
+	wall_right = world:newRectangleCollider(750, 0, 50, 600)
+	ground:setType('static') -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
+	wall_left:setType('static')
+	wall_right:setType('static')
+
+	camera = Camera(0, 0)
 end
 
 GRAVITY = 15
@@ -21,17 +29,15 @@ GRAVITY = 15
 current_level = 0
 
 function love.update(dt)
-	player:update(dt)
+	world:update(dt)
 
-	local dx,dy = player.x - camera.x, player.y - camera.y
-	camera:move(dx/2, dy/2)
+	camera:move(1, 3)
 end
 
 function love.draw()
-	camera:zoomTo(pixel_scale)
 	camera:attach()
-
-	player:draw()
+	
+	world:draw()
 	
 	camera:detach()
 end
