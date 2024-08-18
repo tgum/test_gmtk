@@ -7,8 +7,27 @@ RIGHT = 4
 START = 5
 
 z_block = {START, RIGHT, DOWN, RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, LEFT}
+houselet_shapes = {
+	{START, RIGHT, DOWN, RIGHT},
+	--O>
+	---V>
+	{START, RIGHT, RIGHT, RIGHT},
+	--O>>>
+	{START, DOWN, DOWN, DOWN},
+	--O
+	--V
+	--V
+	--V
+	{START},
+	--O
+	{START, RIGHT, DOWN, LEFT}
+	--O>
+	--<V
+}
 
 function love.load()
+	math.randomseed(os.time())
+
 	-- pixel art
 	love.graphics.setDefaultFilter("nearest", "nearest", 1)
 
@@ -29,7 +48,10 @@ function love.load()
 
 	camera = Camera(width/2, height/2)
 
-	hl = Houselet(100, 0, z_block)
+	houselets = {}
+
+	local hl = Houselet(100, 0, houselet_shapes[math.random(1, #houselet_shapes)])
+	table.insert(houselets, hl)
 end
 
 function love.update(dt)
@@ -43,7 +65,9 @@ function love.draw()
 	
 	world:draw()
 
-	hl:draw()
+	for i, hl in ipairs(houselets) do
+		hl:draw()
+	end
 	
 	camera:detach()
 end
