@@ -2,7 +2,7 @@ dump = require "libs.dump" -- like the most useful thing EVER
 
 io.stdout:setvbuf("no")
 
-function enum(names)
+function enum(names) -- this returns an "enum"
 	local e = {}
 	for i, name in pairs(names) do
 		e[name] = i
@@ -13,11 +13,13 @@ end
 dirs = enum({"UP", "DOWN", "LEFT", "RIGHT", "START"})
 states = enum({"START_MENU", "PLAYING"})
 
+-- the code is so bad it requires at least 1 houselet in the game so i hide one under the "base".png
 houselet_floor = {dirs.START}
 for i = 2, 16 do
 	houselet_floor[i] = dirs.RIGHT
 end
-print(dump(houselet_floor))
+
+-- the different houselets that can spawn, sadly cant support things like a T shape
 houselet_shapes = {
 	{dirs.START, dirs.RIGHT, dirs.DOWN, dirs.RIGHT},
 	--O>
@@ -53,7 +55,7 @@ function get_highest_block()
 end
 
 function love.load()
-	math.randomseed(os.time())
+	math.randomseed(os.time()) -- in lua you gotta init the RNG
 
 	-- pixel art
 	love.graphics.setDefaultFilter("nearest", "nearest", 1)
@@ -68,11 +70,11 @@ function love.load()
 	world = wf.newWorld(0, 512)
 
 	ground = world:newRectangleCollider(0, height-tile_size, width, tile_size)
-	wall_left = world:newRectangleCollider(0, -1000, tile_size, 1000+height)
-	wall_right = world:newRectangleCollider(width-tile_size, -1000, tile_size, 1000+height)
+	--wall_left = world:newRectangleCollider(0, -1000, tile_size, 1000+height)
+	--wall_right = world:newRectangleCollider(width-tile_size, -1000, tile_size, 1000+height)
 	ground:setType('static')
-	wall_left:setType('static')
-	wall_right:setType('static')
+	--wall_left:setType('static')
+	--wall_right:setType('static')
 
 	camera = Camera()
 	camera.smoother = my_smooth_constructor(5)
@@ -80,6 +82,7 @@ function love.load()
 	reset_game()
 end
 
+-- this initialises everything so the game is restartable
 function reset_game()
 	camera:lookAt(width/2, height/2)
 
@@ -134,6 +137,12 @@ end
 
 function love.update(dt)
 	world:update(dt)
+
+	for i, hl in ipairs(houselets) do
+		for j, body in ipairs(hl.bodies) do
+			local x = body:getX()
+		end
+	end
 
 	camera:lockY(math.min(get_new_block_y()+height/2, height/2))
 end
