@@ -1,30 +1,44 @@
+dump = require "libs.dump" -- like the most useful thing EVER
+
 io.stdout:setvbuf("no")
 
-UP = 1
-DOWN = 2
-LEFT = 3
-RIGHT = 4
-START = 5
+function enum(names)
+	local e = {}
+	for i, name in pairs(names) do
+		e[name] = i
+	end
+	return e
+end
 
-z_block = {START, RIGHT, DOWN, RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, LEFT}
+dirs = enum({"UP", "DOWN", "LEFT", "RIGHT", "START"})
+states = enum({"START_MENU", "PLAYING"})
+
+houselet_floor = {dirs.START}
+for i = 2, 16 do
+	houselet_floor[i] = dirs.RIGHT
+end
+print(dump(houselet_floor))
 houselet_shapes = {
-	{START, RIGHT, DOWN, RIGHT},
+	{dirs.START, dirs.RIGHT, dirs.DOWN, dirs.RIGHT},
 	--O>
 	---V>
-	{START, RIGHT, RIGHT, RIGHT},
+	{dirs.START, dirs.RIGHT, dirs.RIGHT, dirs.RIGHT},
 	--O>>>
-	{START},
+	{dirs.START},
 	--O
-	{START, RIGHT, DOWN, LEFT},
+	{dirs.START, dirs.RIGHT, dirs.DOWN, dirs.LEFT},
 	--O>
 	--<V
-	{START, UP, RIGHT, RIGHT, DOWN},
+	{dirs.START, dirs.UP, dirs.RIGHT, dirs.RIGHT, dirs.DOWN},
 	--^>>
 	--O v
-	{START, RIGHT, DOWN, LEFT, LEFT},
+	{dirs.START, dirs.RIGHT, dirs.DOWN, dirs.LEFT, dirs.LEFT},
 	-- O>
 	--<<v
 }
+houselets = {}
+
+state = states.START_MENU
 
 function get_highest_block()
 	local highest_block = 10000
@@ -44,29 +58,38 @@ function love.load()
 	-- pixel art
 	love.graphics.setDefaultFilter("nearest", "nearest", 1)
 
-	dump = require "libs.dump" -- like the most useful thing EVER
 	Camera = require "libs.camera"
 
 	Houselet = require "houselet"
+	
+	base_img = love.graphics.newImage("assets/Buildings/The BASE.png")
 
 	wf = require "libs.windfield"
 	world = wf.newWorld(0, 512)
 
-	ground = world:newRectangleCollider(0, height-50, width, 100)
-	wall_left = world:newRectangleCollider(0, -1000, 50, 1000+height)
-	wall_right = world:newRectangleCollider(width-50, -1000, 50, 1000+height)
+	ground = world:newRectangleCollider(0, height-tile_size, width, tile_size)
+	wall_left = world:newRectangleCollider(0, -1000, tile_size, 1000+height)
+	wall_right = world:newRectangleCollider(width-tile_size, -1000, tile_size, 1000+height)
 	ground:setType('static')
 	wall_left:setType('static')
 	wall_right:setType('static')
 
-	camera = Camera(width/2, height/2)
+	camera = Camera()
+	camera.smoother = my_smooth_constructor(5)
 
+	reset_game()
+end
+
+function reset_game()
+	camera:lookAt(width/2, height/2)
+
+	for i, hl in ipairs(houselets) do
+		hl:destroy()
+	end
+	
 	houselets = {}
-
-	local hl = Houselet(width/2, height/2, {START, LEFT, LEFT, LEFT, LEFT})
+	local hl = Houselet(tile_size, height-tile_size*2, houselet_floor)
 	table.insert(houselets, hl)
-
-	camera.smoother = my_smooth_constructor(1)
 end
 
 function my_smooth_constructor(speed)
@@ -95,13 +118,13 @@ function draw_next_houselet()
 	local x = love.mouse.getX()
 	local y = get_new_block_y()
 	for i, direction in ipairs(next_houselet) do
-		if direction == UP then
+		if direction == dirs.UP then
 			pos_y = pos_y - 1
-		elseif direction == DOWN then
+		elseif direction == dirs.DOWN then
 			pos_y = pos_y + 1
-		elseif direction == LEFT then
+		elseif direction == dirs.LEFT then
 			pos_x = pos_x - 1
-		elseif direction == RIGHT then
+		elseif direction == dirs.RIGHT then
 			pos_x = pos_x + 1
 		end
 		table.insert(positions, {pos_x, pos_y})
@@ -112,7 +135,7 @@ end
 function love.update(dt)
 	world:update(dt)
 
-	camera:lockY(math.min(get_new_block_y()+height/2, 1000))
+	camera:lockY(math.min(get_new_block_y()+height/2, height/2))
 end
 
 function love.draw()
@@ -126,9 +149,46 @@ function love.draw()
 
 	love.graphics.rectangle("fill", love.mouse.getX(), get_new_block_y(), 10, 10)
 	draw_next_houselet()
+
+	love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 	
 	camera:detach()
 
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
+
+--[[
+WOW
+YOU READ ALL THIS CODE
+NICE
+YOU'RE COOL PERSON
+
+YOU DESERVE A REWARD
+
+            .-"""-.
+           '       \
+          |,.  ,-.  |
+          |()L( ()| |
+          |,'  `".| |
+          |.___.',| `
+         .j `--"' `  `.
+        / '        '   \
+       / /          `   `.
+      / /            `    .
+     / /              l   |
+    . ,               |   |
+    ,"`.             .|   |
+ _.'   ``.          | `..-'l
+|       `.`,        |      `.
+|         `.    __.j         )
+|__        |--""___|      ,-'
+   `"--...,+""""   `._,.-' mh
+
+UNLESS YOU USE WINDOWS
+THEN YOU DONT DESERVE ONE
+AND YOU SHALL BE CURSED
+BY THE DAEMONS OF HELL
+]]
+
+
 

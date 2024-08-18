@@ -13,13 +13,13 @@ function Houselet:new(x, y, pattern)
 	local pos_x = 0
 	local pos_y = 0
 	for i, direction in ipairs(pattern) do
-		if direction == UP then
+		if direction == dirs.UP then
 			pos_y = pos_y - 1
-		elseif direction == DOWN then
+		elseif direction == dirs.DOWN then
 			pos_y = pos_y + 1
-		elseif direction == LEFT then
+		elseif direction == dirs.LEFT then
 			pos_x = pos_x - 1
-		elseif direction == RIGHT then
+		elseif direction == dirs.RIGHT then
 			pos_x = pos_x + 1
 		end
 		table.insert(self.positions, {pos_x, pos_y})
@@ -35,13 +35,13 @@ function Houselet:new(x, y, pattern)
 		if i > 1 then
 			direction = pattern[i]
 			dir_vector = {0, 0}
-			if direction == UP then
+			if direction == dirs.UP then
 				dir_vector = {0, -1}
-			elseif direction == DOWN then
+			elseif direction == dirs.DOWN then
 				dir_vector = {0, 1}
-			elseif direction == LEFT then
+			elseif direction == dirs.LEFT then
 				dir_vector = {-1, 0}
-			elseif direction == RIGHT then
+			elseif direction == dirs.RIGHT then
 				dir_vector = {1, 0}
 			end
 			joint_x = (pos_x - dir_vector[1]/2) * tile_size + x
@@ -60,6 +60,15 @@ function Houselet:draw()
 											 body:getAngle(),
 											 pixel_scale, pixel_scale,
 											 tile_size/(2*pixel_scale), tile_size/(2*pixel_scale))
+	end
+end
+
+function Houselet:destroy()
+	for i, joint in ipairs(self.joints) do
+		joint:destroy()
+	end
+	for i, body in ipairs(self.bodies) do
+		body:destroy()
 	end
 end
 
