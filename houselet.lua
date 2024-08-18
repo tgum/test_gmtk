@@ -29,7 +29,7 @@ function Houselet:new(x, y, pattern)
 		pos_x = pos[1]
 		pos_y = pos[2]
 		body = world:newRectangleCollider(pos_x * tile_size + x, pos_y * tile_size + y, tile_size, tile_size)
-		body:setRestitution(0.1)
+		body:setRestitution(0.)
 		table.insert(self.bodies, body)
 
 		if i > 1 then
@@ -50,14 +50,16 @@ function Houselet:new(x, y, pattern)
 		end
 	end
 
-	self.image = love.graphics.newImage("assets/Buildings/Buildings2.png")
+	self.image = love.graphics.newImage("assets/Buildings/Buildings"..math.random(1, 5)..".png")
 end
 
 function Houselet:draw()
 	for i, body in ipairs(self.bodies) do
-		love.graphics.push()
-		love.graphics.draw(self.image, body:getX(), body:getY(), body:getAngle(), 1, 1, tile_size/2, tile_size/2)
-		love.graphics.pop()
+		love.graphics.draw(self.image,
+											 body:getX(), body:getY(),
+											 body:getAngle(),
+											 pixel_scale, pixel_scale,
+											 tile_size/(2*pixel_scale), tile_size/(2*pixel_scale))
 	end
 end
 
