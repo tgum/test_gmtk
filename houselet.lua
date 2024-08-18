@@ -50,7 +50,7 @@ function Houselet:new(x, y, pattern)
 		end
 	end
 
-	self.image = love.graphics.newImage("assets/building_pieces/placeholder/1.png")
+	self.image = love.graphics.newImage("assets/Buildings/Buildings2.png")
 end
 
 function Houselet:draw()
