@@ -1,8 +1,44 @@
+function getArgs(fun)
+  local args = {}
+  local hook = debug.gethook()
+
+  local argHook = function( ... )
+    local info = debug.getinfo(3)
+    if 'pcall' ~= info.name then return end
+
+    for i = 1, math.huge do
+      local name, value = debug.getlocal(2, i)
+      if '(*temporary)' == name then
+        debug.sethook(hook)
+        error('')
+        return
+      end
+      table.insert(args,name)
+    end
+  end
+
+  debug.sethook(argHook, "c")
+  pcall(fun)
+  
+  return args
+end
+
 Object = require "libs.classic"
 
 Houselet = Object:extend()
 
-function Houselet:new(x, y, pattern)
+function rotatePoint(x, y, angle)
+	local cs = math.cos(angle)
+	local sn = math.sin(angle)
+	
+	local nx = x * cs - y * sn
+	local ny = x * sn + y * cs
+
+	return nx, ny
+end
+
+function Houselet:new(x, y, pattern, rotation)
+	rotation = rotation or 0
 	self.x = x
 	self.y = y
 	
@@ -28,7 +64,11 @@ function Houselet:new(x, y, pattern)
 	for i, pos in ipairs(self.positions) do
 		pos_x = pos[1]
 		pos_y = pos[2]
-		body = world:newRectangleCollider(pos_x * tile_size + x, pos_y * tile_size + y, tile_size, tile_size)
+		pos_x, pos_y = rotatePoint(pos_x, pos_y, rotation)
+		body = world:newRectangleCollider(pos_x * tile_size + x,
+																			pos_y * tile_size + y,
+																			tile_size, tile_size)
+		body:setAngle(rotation)
 		body:setRestitution(0.)
 		table.insert(self.bodies, body)
 
@@ -46,7 +86,10 @@ function Houselet:new(x, y, pattern)
 			end
 			joint_x = (pos_x - dir_vector[1]/2) * tile_size + x
 			joint_y = (pos_y - dir_vector[2]/2) * tile_size + y
-			joint = world:addJoint('WeldJoint', self.bodies[i], self.bodies[i-1], joint_x, joint_y, true)
+			joint = world:addJoint('WeldJoint',
+														self.bodies[i], self.bodies[i-1],
+														joint_x, joint_y,
+														true)
 		end
 	end
 

@@ -117,9 +117,14 @@ function gen_next_houslet()
 end
 next_houselet = gen_next_houslet()
 
+function love.wheelmoved(x, y)
+	next_houselet.rotation = next_houselet.rotation - y * 0.07
+end
+
 function love.mousereleased( x, y, button, istouch, presses )
 	if state == states.PLAYING then
-		local hl = Houselet(x, get_new_block_y(), next_houselet.shape)
+		print(dump(next_houselet))
+		local hl = Houselet(x, get_new_block_y(), next_houselet.shape, next_houselet.rotation)
 		hl.image = next_houselet.image
 		table.insert(houselets, hl)
 		next_houselet = gen_next_houslet()
@@ -146,7 +151,12 @@ function draw_next_houselet()
 			pos_x = pos_x + 1
 		end
 		table.insert(positions, {pos_x, pos_y})
-		love.graphics.rectangle("fill", pos_x * tile_size + x, pos_y * tile_size + y, tile_size, tile_size)
+		local block_x, block_y = rotatePoint(pos_x, pos_y, next_houselet.rotation)
+		block_x = block_x * tile_size + x
+		block_y = block_y * tile_size + y
+		love.graphics.draw(next_houselet.image,
+											 block_x, block_y,
+											 next_houselet.rotation, 2, 2)
 	end
 end
 
@@ -182,10 +192,11 @@ function love.draw()
 		for i, hl in ipairs(houselets) do
 			hl:draw()
 		end
+		world:draw()
 
 		draw_next_houselet()
 
-		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
+		--love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 		
 		camera:detach()
 	elseif state == states.GAME_OVER then
