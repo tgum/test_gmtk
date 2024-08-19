@@ -108,13 +108,21 @@ function get_new_block_y()
 	return get_highest_block() - tile_size*5
 end
 
-next_houselet = houselet_shapes[math.random(1, #houselet_shapes)]
+function gen_next_houslet()
+	local nhl = {}
+	nhl.shape = houselet_shapes[math.random(1, #houselet_shapes)]
+	nhl.image = love.graphics.newImage("assets/Buildings/Buildings"..math.random(1, 5)..".png")
+	nhl.rotation = 0
+	return nhl
+end
+next_houselet = gen_next_houslet()
 
 function love.mousereleased( x, y, button, istouch, presses )
 	if state == states.PLAYING then
-		local hl = Houselet(x, get_new_block_y(), next_houselet)
+		local hl = Houselet(x, get_new_block_y(), next_houselet.shape)
+		hl.image = next_houselet.image
 		table.insert(houselets, hl)
-		next_houselet = houselet_shapes[math.random(1, #houselet_shapes)]
+		next_houselet = gen_next_houslet()
 	elseif state == states.START_MENU then
 		state = states.PLAYING
 	end
@@ -127,7 +135,7 @@ function draw_next_houselet()
 	local pos_y = 0
 	local x = love.mouse.getX()
 	local y = get_new_block_y()
-	for i, direction in ipairs(next_houselet) do
+	for i, direction in ipairs(next_houselet.shape) do
 		if direction == dirs.UP then
 			pos_y = pos_y - 1
 		elseif direction == dirs.DOWN then
