@@ -11,11 +11,11 @@ function enum(names) -- this returns an "enum"
 end
 
 dirs = enum({"UP", "DOWN", "LEFT", "RIGHT", "START"})
-states = enum({"START_MENU", "PLAYING"})
+states = enum({"START_MENU", "PLAYING", "GAME_OVER"})
 
 -- the code is so bad it requires at least 1 houselet in the game so i hide one under the "base".png
 houselet_floor = {dirs.START}
-for i = 2, 16 do
+for i = 2, 18 do
 	houselet_floor[i] = dirs.RIGHT
 end
 
@@ -41,6 +41,7 @@ houselet_shapes = {
 houselets = {}
 
 state = states.START_MENU
+state_data = {}
 
 function get_highest_block()
 	local highest_block = 10000
@@ -65,6 +66,7 @@ function love.load()
 	Houselet = require "houselet"
 	
 	base_img = love.graphics.newImage("assets/Buildings/The BASE.png")
+	background_img = love.graphics.newImage("assets/Sky/Sky.png")
 
 	wf = require "libs.windfield"
 	world = wf.newWorld(0, 512)
@@ -85,13 +87,14 @@ end
 -- this initialises everything so the game is restartable
 function reset_game()
 	camera:lookAt(width/2, height/2)
+	camera.smoother = my_smooth_constructor(5)
 
 	for i, hl in ipairs(houselets) do
 		hl:destroy()
 	end
 	
 	houselets = {}
-	local hl = Houselet(tile_size, height-tile_size*2, houselet_floor)
+	local hl = Houselet(0, height-tile_size*2, houselet_floor)
 	table.insert(houselets, hl)
 end
 
@@ -108,9 +111,13 @@ end
 next_houselet = houselet_shapes[math.random(1, #houselet_shapes)]
 
 function love.mousereleased( x, y, button, istouch, presses )
-	local hl = Houselet(x, get_new_block_y(), next_houselet)
-	table.insert(houselets, hl)
-	next_houselet = houselet_shapes[math.random(1, #houselet_shapes)]
+	if state == states.PLAYING then
+		local hl = Houselet(x, get_new_block_y(), next_houselet)
+		table.insert(houselets, hl)
+		next_houselet = houselet_shapes[math.random(1, #houselet_shapes)]
+	elseif state == states.START_MENU then
+		state = states.PLAYING
+	end
 end
 
 function draw_next_houselet()
@@ -136,32 +143,56 @@ function draw_next_houselet()
 end
 
 function love.update(dt)
-	world:update(dt)
+	if state == states.PLAYING then
+		world:update(dt)
 
-	for i, hl in ipairs(houselets) do
-		for j, body in ipairs(hl.bodies) do
-			local x = body:getX()
+		for i, hl in ipairs(houselets) do
+			for j, body in ipairs(hl.bodies) do
+				local x = body:getX()
+				if x < 0 or x > width then
+					state = states.GAME_OVER
+					camera.smoother = my_smooth_constructor(100)
+					state_data.x = x
+					state_data.y = math.min(body:getY()+height/2, height/2)
+				end
+			end
 		end
-	end
 
-	camera:lockY(math.min(get_new_block_y()+height/2, height/2))
+		camera:lockY(math.min(get_new_block_y()+height/2, height/2))
+	end
 end
 
 function love.draw()
-	camera:attach()
+	if state == states.START_MENU then
+		love.graphics.print("FALLIN HOUSES", 50, 50)
 	
-	world:draw()
+	elseif state == states.PLAYING then
+		camera:attach()
 
-	for i, hl in ipairs(houselets) do
-		hl:draw()
+		love.graphics.draw(background_img, 0, (-background_img:getHeight()-height-tile_size*7), 0, 2, 2)
+
+		for i, hl in ipairs(houselets) do
+			hl:draw()
+		end
+
+		draw_next_houselet()
+
+		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
+		
+		camera:detach()
+	elseif state == states.GAME_OVER then
+		camera:lockPosition(state_data.x, state_data.y)
+		camera:attach()
+		love.graphics.draw(background_img, 0, (-background_img:getHeight()-height-tile_size*7), 0, 2, 2)
+		
+		for i, hl in ipairs(houselets) do
+			hl:draw()
+		end
+		
+		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
+		
+		camera:detach()
 	end
-
-	love.graphics.rectangle("fill", love.mouse.getX(), get_new_block_y(), 10, 10)
-	draw_next_houselet()
-
-	love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
-	
-	camera:detach()
 
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
