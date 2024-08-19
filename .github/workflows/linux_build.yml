@@ -3,50 +3,36 @@
   # uses: love-actions/love-actions-linux@934435f89436297689a4d5388e550e5718e6ba65
   uses: love-actions/love-actions-linux@v1.2.2
   with:
-    # App display name
-Would be used in desktop file
+    # App display name Would be used in desktop file
 
-    app-name: # optional, default is love
-    # App description
-Would be used in control file and desktop file
-
-    description: # optional, default is love game
-    # Path to the icon, only supports png
-Would be used in desktop file
-
-    icon-path: # optional
-    # Love package
-Would be used to assemble the executable
-
-    love-package: # optional, default is ./game.love
-    # Path to the lib folder
-Would copy all contents
-Top folder not included
-
-    lib-path: # optional
-    # Path to the share folder
-Would copy all contents
-Top folder not included
-
-    share-path: # optional
+    app-name: "GMTK 2024" # optional, default is love
+    
+    # App description Would be used in control file and desktop file
+    #description: # optional, default is love game
+    
+    # Path to the icon, only supports png Would be used in desktop file
+    icon-path: assets/Cheese/Cheese1.png # optional
+    
+    # Love package Would be used to assemble the executable
+    #love-package: # optional, default is ./game.love
+    
+    # Path to the lib folder Would copy all contents Top folder not included
+    #lib-path: # optional
+    
+    # Path to the share folder Would copy all contents Top folder not included
+    #share-path: # optional
+    
     # Switch to control build deb package or not
-
-    build-deb: # optional, default is true
-    # App bundle ID
-Would be used to rename debian package's desktop file
-
-    bundle-id: # optional, default is org.loveactions.love
-    # App version string
-Use 3 numbers seperated by dots
-Looks like 3.2.1
-
-    version-string: # optional, default is 11.4
-    # Base name of the package
-Would be used to rename products
-
+    #build-deb: # optional, default is true     # App bundle ID Would be used to rename debian package's desktop file
+    
+    #bundle-id: # optional, default is org.loveactions.love
+    
+    # App version string Use 3 numbers seperated by dots Looks like 3.2.1
+    version-string: 0.0.1 # optional, default is 11.4
+    
+    # Base name of the package Would be used to rename products
     product-name: # optional, default is love_app
-    # Packages output folder
-All packages would be placed here
-
+    
+    # Packages output folder All packages would be placed here
     output-folder: # optional, default is ./build
           
