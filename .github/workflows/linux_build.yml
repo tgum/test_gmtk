@@ -1,4 +1,4 @@
-            - name: Love actions for Linux
+- name: Love actions for Linux
   # You may pin to the exact commit or the version.
   # uses: love-actions/love-actions-linux@934435f89436297689a4d5388e550e5718e6ba65
   uses: love-actions/love-actions-linux@v1.2.2
