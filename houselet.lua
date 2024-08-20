@@ -97,12 +97,14 @@ function Houselet:new(x, y, pattern, rotation)
 end
 
 function Houselet:draw()
-	for i, body in ipairs(self.bodies) do
-		love.graphics.draw(self.image,
-											 body:getX(), body:getY(),
-											 body:getAngle(),
-											 pixel_scale, pixel_scale,
-											 tile_size/(2*pixel_scale), tile_size/(2*pixel_scale))
+	if self.image then
+		for i, body in ipairs(self.bodies) do
+			love.graphics.draw(self.image,
+												body:getX(), body:getY(),
+												body:getAngle(),
+												pixel_scale, pixel_scale,
+												tile_size/(2*pixel_scale), tile_size/(2*pixel_scale))
+		end
 	end
 end
 

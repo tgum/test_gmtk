@@ -11,7 +11,7 @@ function enum(names) -- this returns an "enum"
 end
 
 dirs = enum({"UP", "DOWN", "LEFT", "RIGHT", "START"})
-states = enum({"START_MENU", "PLAYING", "GAME_OVER"})
+states = enum({"START_MENU", "PLAYING", "GAME_OVER", "WON"})
 
 -- the code is so bad it requires at least 1 houselet in the game so i hide one under the "base".png
 houselet_floor = {dirs.START}
@@ -43,6 +43,8 @@ houselets = {}
 state = states.START_MENU
 state_data = {}
 
+hacks = true
+
 function get_highest_block()
 	local highest_block = 10000
 	for i, hl in ipairs(houselets) do
@@ -67,16 +69,40 @@ function love.load()
 	
 	base_img = love.graphics.newImage("assets/Buildings/Base.png")
 	background_img = love.graphics.newImage("assets/Sky/Sky.png")
+	background_no_text_img = love.graphics.newImage("assets/Sky/Sky_no_text.png")
 
-	music = love.audio.newSource("Real-Music.mp3", "stream")
+	magnet_img = love.graphics.newImage("assets/Magnet/Magnet.png")
+
+	win_img = love.graphics.newImage("assets/UI/Win/Win.png")
+	lose_img = love.graphics.newImage("assets/UI/Win/Lose.png")
+
+	music = love.audio.newSource("Very calm and good music.mp3", "stream")
 	music:setLooping(true)
 	music:play()
+
+	sfx = {}
+	sfx.drop = love.audio.newSource("SFX/Magnet-off.wav", "static")
+	sfx.fall = love.audio.newSource("SFX/Fall-better.wav", "static")
+	sfx.thump = love.audio.newSource("SFX/Thump2.wav", "static")
+
+	title_text = {}
+	for i = 1, 13 do
+		title_text[i] = love.graphics.newImage("assets/Title/Letters"..i..".png")
+	end
+	state_data.index = 1
+	state_data.timer = 0
+
+	win_animation = {}
+	for i = 1, 47 do
+		win_animation[i] = love.graphics.newImage("assets/Win animation/Scale"..i..".png")
+	end
+	--title_text = love.graphics.newImage("assets/Cover art.png")
 
 	wf = require "libs.windfield"
 	world = wf.newWorld(0, 512)
 
 	ground = world:newRectangleCollider(0, height-tile_size, width, tile_size)
-	ground:setType('static')
+	ground:setType("static")
 
 	camera = Camera()
 	camera.smoother = my_smooth_constructor(5)
@@ -95,6 +121,7 @@ function reset_game()
 	
 	houselets = {}
 	local hl = Houselet(0, height-tile_size*2, houselet_floor)
+	hl.image = nil
 	table.insert(houselets, hl)
 end
 
@@ -129,7 +156,10 @@ function love.mousereleased( x, y, button, istouch, presses )
 		hl.image = next_houselet.image
 		table.insert(houselets, hl)
 		next_houselet = gen_next_houslet()
-	elseif state == states.START_MENU then
+		sfx.drop:play()
+		--sfx.fall:play()
+	elseif state == states.START_MENU or state == states.WON or state == states.GAME_OVER then
+		reset_game()
 		state = states.PLAYING
 	end
 end
@@ -162,7 +192,21 @@ function draw_next_houselet()
 end
 
 function love.update(dt)
-	if state == states.PLAYING then
+	if love.keyboard.isDown("space") and hacks then
+		for i, hl in ipairs(houselets) do
+			for j, body in ipairs(hl.bodies) do
+				body:setType("static")
+			end
+		end
+	end
+
+	if state == states.START_MENU then
+		state_data.timer = state_data.timer + dt
+	elseif state == states.WON then
+		state_data.timer = state_data.timer + dt
+	elseif state == states.GAME_OVER then
+		state_data.timer = state_data.timer + dt
+	elseif state == states.PLAYING then
 		world:update(dt)
 
 		for i, hl in ipairs(houselets) do
@@ -172,24 +216,53 @@ function love.update(dt)
 					state = states.GAME_OVER
 					camera.smoother = my_smooth_constructor(50)
 					
+					state_data.timer = 0
 					state_data.x = width/2
 					state_data.y = math.min(body:getY() + height/2, height/2)
 				end
 			end
 		end
 
-		camera:lockY(math.min(get_new_block_y() + height/2, height/2))
+		if get_highest_block() < -(background_img:getHeight()*2-height) then
+			camera.smoother = my_smooth_constructor(200)
+			state = states.WON
+			state_data.state = "look"
+			state_data.index = 1
+			state_data.timer = 0
+		end
+
+		camera:lockY(
+							math.max(
+												math.min(
+															get_new_block_y() + height/2 - height/8,
+															height/2
+												),
+												-(background_img:getHeight()*2-height) + tile_size*5
+										)
+									)
 	end
 end
 
 function love.draw()
 	if state == states.START_MENU then
-		love.graphics.print("FALLIN HOUSES", 50, 50)
-	
+		local frame_index = 13
+		if state_data.index < 13 then
+			frame_index = state_data.index
+		end
+		local bg_y = (-background_img:getHeight()-height) + (tile_size*state_data.index/100) + (tile_size*state_data.timer/100)
+		if bg_y > 0 then
+			state_data.index = 1
+		end
+		love.graphics.draw(background_no_text_img, 0,   bg_y, 0, 2, 2)
+		love.graphics.draw(title_text[frame_index], 0, 0, 0, 2, 2)
+		if state_data.timer > 0.05 then
+			state_data.timer = 0
+			state_data.index = state_data.index + 1
+		end
 	elseif state == states.PLAYING then
 		camera:attach()
 
-		love.graphics.draw(background_img, 0, (-background_img:getHeight()-height-tile_size*7), 0, 2, 2)
+		love.graphics.draw(background_img, 0, -(background_img:getHeight()*2-height), 0, 2, 2)
 
 		for i, hl in ipairs(houselets) do
 			hl:draw()
@@ -200,11 +273,10 @@ function love.draw()
 		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 		
 		camera:detach()
-		
 	elseif state == states.GAME_OVER then
 		camera:lockPosition(state_data.x, state_data.y)
 		camera:attach()
-		love.graphics.draw(background_img, 0, (-background_img:getHeight()-height-tile_size*7), 0, 2, 2)
+		love.graphics.draw(background_img, 0, -(background_img:getHeight()*2-height), 0, 2, 2)
 		
 		for i, hl in ipairs(houselets) do
 			hl:draw()
@@ -213,6 +285,39 @@ function love.draw()
 		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 		
 		camera:detach()
+	elseif state == states.WON then
+		if state_data.state == "look" then
+			camera:lockY(height/2)
+			camera:attach()
+			love.graphics.draw(background_img, 0, -(background_img:getHeight()*2-height), 0, 2, 2)
+			for i, hl in ipairs(houselets) do
+				hl:draw()
+			end
+			love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
+			camera:detach()
+
+			if state_data.timer > 5 then
+				state_data.state = "animation"
+			end
+		elseif state_data.state == "animation" then
+			love.graphics.setBackgroundColor(31/255, 23/255, 35/255)
+			local frame_index = 47
+			if state_data.index < 47 then
+				frame_index = state_data.index
+			else
+				state_data.state = "text"
+			end
+			local bg_y = 0
+			love.graphics.draw(win_animation[frame_index], 0, 0, 0, 2, 2)
+			if state_data.timer > 0.05 then
+				state_data.timer = 0
+				state_data.index = state_data.index + 1
+			end
+		elseif state_data.state == "text" then
+			love.graphics.setBackgroundColor(31/255, 23/255, 35/255)
+			love.graphics.draw(win_animation[47], 0, 0, 0, 2, 2)
+			love.graphics.draw(win_img, width/2 - win_img:getWidth(), height/2 - win_img:getHeight(), 0, 2, 2)
+		end
 	end
 
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
