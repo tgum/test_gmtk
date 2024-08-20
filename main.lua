@@ -43,7 +43,7 @@ houselets = {}
 state = states.START_MENU
 state_data = {}
 
-hacks = true
+hacks = false
 
 function get_highest_block()
 	local highest_block = 10000
@@ -152,12 +152,21 @@ end
 
 function love.mousereleased( x, y, button, istouch, presses )
 	if state == states.PLAYING then
-		local hl = Houselet(x, get_new_block_y(), next_houselet.shape, next_houselet.rotation)
-		hl.image = next_houselet.image
-		table.insert(houselets, hl)
-		next_houselet = gen_next_houslet()
-		sfx.drop:play()
-		--sfx.fall:play()
+		local top_houselet = houselets[#houselets]
+		local topspeed = 0
+		for i, body in ipairs(top_houselet.bodies) do
+			local spedx, spedy = body:getLinearVelocity()
+			local speed = spedx + spedy
+			if speed > topspeed then topspeed = speed end
+		end
+		if topspeed < 20 then
+			local hl = Houselet(x, get_new_block_y(), next_houselet.shape, next_houselet.rotation)
+			hl.image = next_houselet.image
+			table.insert(houselets, hl)
+			next_houselet = gen_next_houslet()
+			sfx.drop:play()
+			--sfx.fall:play()
+		end
 	elseif state == states.START_MENU or state == states.WON or state == states.GAME_OVER then
 		reset_game()
 		state = states.PLAYING
@@ -171,6 +180,7 @@ function draw_next_houselet()
 	local pos_y = 0
 	local x = love.mouse.getX()
 	local y = get_new_block_y()
+
 	for i, direction in ipairs(next_houselet.shape) do
 		if direction == dirs.UP then
 			pos_y = pos_y - 1
@@ -273,6 +283,8 @@ function love.draw()
 		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 		
 		camera:detach()
+
+		love.graphics.draw(magnet_img, love.mouse.getX()-magnet_img:getWidth(), 0, 0, 2, 2)
 	elseif state == states.GAME_OVER then
 		camera:lockPosition(state_data.x, state_data.y)
 		camera:attach()
@@ -283,8 +295,12 @@ function love.draw()
 		end
 		
 		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
-		
+
 		camera:detach()
+
+		if state_data.timer > 2 then
+			love.graphics.draw(lose_img, width/2 - lose_img:getWidth(), height/2 - lose_img:getHeight(), 0, 2, 2)
+		end
 	elseif state == states.WON then
 		if state_data.state == "look" then
 			camera:lockY(height/2)
@@ -296,7 +312,7 @@ function love.draw()
 			love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 			camera:detach()
 
-			if state_data.timer > 5 then
+			if state_data.timer > 7 then
 				state_data.state = "animation"
 			end
 		elseif state_data.state == "animation" then
@@ -319,8 +335,6 @@ function love.draw()
 			love.graphics.draw(win_img, width/2 - win_img:getWidth(), height/2 - win_img:getHeight(), 0, 2, 2)
 		end
 	end
-
-	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
 
 --[[
