@@ -65,18 +65,18 @@ function love.load()
 
 	Houselet = require "houselet"
 	
-	base_img = love.graphics.newImage("assets/Buildings/The BASE.png")
+	base_img = love.graphics.newImage("assets/Buildings/Base.png")
 	background_img = love.graphics.newImage("assets/Sky/Sky.png")
+
+	music = love.audio.newSource("Real-Music.mp3", "stream")
+	music:setLooping(true)
+	music:play()
 
 	wf = require "libs.windfield"
 	world = wf.newWorld(0, 512)
 
 	ground = world:newRectangleCollider(0, height-tile_size, width, tile_size)
-	--wall_left = world:newRectangleCollider(0, -1000, tile_size, 1000+height)
-	--wall_right = world:newRectangleCollider(width-tile_size, -1000, tile_size, 1000+height)
 	ground:setType('static')
-	--wall_left:setType('static')
-	--wall_right:setType('static')
 
 	camera = Camera()
 	camera.smoother = my_smooth_constructor(5)
@@ -118,12 +118,13 @@ end
 next_houselet = gen_next_houslet()
 
 function love.wheelmoved(x, y)
+	if y > 1 then y = 1 end
+	if y < -1 then y = -1 end
 	next_houselet.rotation = next_houselet.rotation - y * 0.07
 end
 
 function love.mousereleased( x, y, button, istouch, presses )
 	if state == states.PLAYING then
-		print(dump(next_houselet))
 		local hl = Houselet(x, get_new_block_y(), next_houselet.shape, next_houselet.rotation)
 		hl.image = next_houselet.image
 		table.insert(houselets, hl)
@@ -169,14 +170,15 @@ function love.update(dt)
 				local x = body:getX()
 				if x < 0 or x > width then
 					state = states.GAME_OVER
-					camera.smoother = my_smooth_constructor(100)
-					state_data.x = x
-					state_data.y = math.min(body:getY()+height/2, height/2)
+					camera.smoother = my_smooth_constructor(50)
+					
+					state_data.x = width/2
+					state_data.y = math.min(body:getY() + height/2, height/2)
 				end
 			end
 		end
 
-		camera:lockY(math.min(get_new_block_y()+height/2, height/2))
+		camera:lockY(math.min(get_new_block_y() + height/2, height/2))
 	end
 end
 
@@ -192,13 +194,13 @@ function love.draw()
 		for i, hl in ipairs(houselets) do
 			hl:draw()
 		end
-		world:draw()
 
 		draw_next_houselet()
 
-		--love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
+		love.graphics.draw(base_img, 0, height-tile_size*2, 0, 2, 2)
 		
 		camera:detach()
+		
 	elseif state == states.GAME_OVER then
 		camera:lockPosition(state_data.x, state_data.y)
 		camera:attach()
